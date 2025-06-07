@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 
 const BackendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Initialize Supabase client
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 function MyProducts() {
   const [products, setProducts] = useState([]);
@@ -9,6 +17,7 @@ function MyProducts() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const navigate = useNavigate();
   
   // Modal states
@@ -45,6 +54,7 @@ function MyProducts() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (!token) {
           navigate('/signin');
@@ -139,6 +149,11 @@ function MyProducts() {
       ...prev,
       [name]: value
     }));
+    
+    // Update image preview for imageUrl changes
+    if (name === 'imageUrl' && value) {
+      setImagePreview(value);
+    }
   };
 
   // Handle image file selection
@@ -194,7 +209,7 @@ function MyProducts() {
     }
   };
 
-  // Supabase upload function, similar to what you have in AddProd.jsx
+  // Supabase upload function
   const uploadImageToSupabase = async (file) => {
     if (!supabase) {
       throw new Error('Supabase client not initialized. Check your environment variables.');
@@ -298,17 +313,44 @@ function MyProducts() {
     }
   };
   
+  // Enhanced filtered products with improved search and category filtering
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Search term matching (search in all text fields)
+    const searchInFields = [
+      product.productName,
+      product.description,
+      product.category,
+    ].map(field => field ? field.toLowerCase() : '');
     
-    if (filter === 'all') return matchesSearch;
-    if (filter === 'in-stock') return matchesSearch && parseInt(product.stock) > 0;
-    if (filter === 'out-of-stock') return matchesSearch && parseInt(product.stock) === 0;
-    if (filter === 'low-stock') return matchesSearch && parseInt(product.stock) <= 5 && parseInt(product.stock) > 0;
+    const matchesSearch = searchTerm === '' || searchInFields.some(field => 
+      field.includes(searchTerm.toLowerCase())
+    );
     
-    return matchesSearch;
+    // Category filtering
+    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+    
+    // Stock status filtering
+    let matchesStockFilter = true;
+    if (filter === 'in-stock') {
+      matchesStockFilter = parseInt(product.stock) > 0;
+    } else if (filter === 'out-of-stock') {
+      matchesStockFilter = parseInt(product.stock) === 0;
+    } else if (filter === 'low-stock') {
+      matchesStockFilter = parseInt(product.stock) <= 5 && parseInt(product.stock) > 0;
+    }
+    
+    return matchesSearch && matchesCategory && matchesStockFilter;
   });
+
+  // Get available categories from products for filtering
+  const availableCategories = [...new Set(products.map(product => product.category))];
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilter('all');
+    setCategoryFilter('all');
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -322,7 +364,7 @@ function MyProducts() {
         <div className="mt-4 md:mt-0">
           <Link
             to="/addprod"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
           >
             <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -333,43 +375,92 @@ function MyProducts() {
       </div>
 
       {error && (
-        <div className="p-3 mb-6 text-sm text-white bg-black rounded-md">
+        <div className="p-3 mb-6 text-sm text-white bg-red-600 rounded-md">
           {error}
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
-        <div className="flex-1">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black pl-10"
-            />
-            <svg className="h-5 w-5 text-gray-400 absolute left-3 top-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
+      {/* Enhanced Search and Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="col-span-1 md:col-span-3">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by product name, description or category..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 pl-10"
+              />
+              <svg className="h-5 w-5 text-gray-400 absolute left-3 top-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+          
+          <div>
+            <label htmlFor="category-filter" className="block text-xs font-medium text-gray-500 mb-1">
+              Category
+            </label>
+            <select
+              id="category-filter"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Categories</option>
+              {availableCategories.map(category => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="stock-filter" className="block text-xs font-medium text-gray-500 mb-1">
+              Stock Status
+            </label>
+            <select
+              id="stock-filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Products</option>
+              <option value="in-stock">In Stock</option>
+              <option value="out-of-stock">Out of Stock</option>
+              <option value="low-stock">Low Stock</option>
+            </select>
+          </div>
+          
+          <div className="flex items-end">
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+            >
+              <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear Filters
+            </button>
           </div>
         </div>
-        <div className="md:w-1/5">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
-          >
-            <option value="all">All Products</option>
-            <option value="in-stock">In Stock</option>
-            <option value="out-of-stock">Out of Stock</option>
-            <option value="low-stock">Low Stock</option>
-          </select>
-        </div>
+        
+        {/* Results count */}
+        {!loading && (
+          <div className="mt-4 text-sm text-gray-500">
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+            {(searchTerm || filter !== 'all' || categoryFilter !== 'all') && (
+              <span> with current filters</span>
+            )}
+          </div>
+        )}
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="bg-gray-50 rounded-lg p-6 text-center">
@@ -378,18 +469,29 @@ function MyProducts() {
           </svg>
           <h3 className="mt-2 text-xl font-medium text-gray-900">No products found</h3>
           <p className="mt-1 text-sm text-gray-500">
-            {searchTerm ? 'No products match your search.' : 'You haven\'t added any products yet.'}
+            {searchTerm || filter !== 'all' || categoryFilter !== 'all' ? 
+              'No products match your filters. Try adjusting your search criteria.' : 
+              'You haven\'t added any products yet.'}
           </p>
-          <div className="mt-6">
-            <Link
-              to="/addprod"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-              Add New Product
-            </Link>
+          <div className="mt-6 flex justify-center space-x-3">
+            {(searchTerm || filter !== 'all' || categoryFilter !== 'all') ? (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Clear Filters
+              </button>
+            ) : (
+              <Link
+                to="/addprod"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Add New Product
+              </Link>
+            )}
           </div>
         </div>
       ) : (
@@ -549,7 +651,7 @@ function MyProducts() {
                         required
                         value={editFormData.productName}
                         onChange={handleEditFormChange}
-                        className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                        className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     
@@ -567,7 +669,7 @@ function MyProducts() {
                           required
                           value={editFormData.price}
                           onChange={handleEditFormChange}
-                          className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                          className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                       
@@ -583,7 +685,7 @@ function MyProducts() {
                           required
                           value={editFormData.stock}
                           onChange={handleEditFormChange}
-                          className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                          className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                     </div>
@@ -598,7 +700,7 @@ function MyProducts() {
                         required
                         value={editFormData.category}
                         onChange={handleEditFormChange}
-                        className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                        className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       >
                         {categories.map((category) => (
                           <option key={category} value={category}>
@@ -618,7 +720,7 @@ function MyProducts() {
                         rows="3"
                         value={editFormData.description}
                         onChange={handleEditFormChange}
-                        className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                        className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       ></textarea>
                     </div>
                     
@@ -705,7 +807,7 @@ function MyProducts() {
                             id="imageUrl"
                             value={editFormData.imageUrl}
                             onChange={handleEditFormChange}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             placeholder="https://example.com/image.jpg"
                           />
                         </div>
@@ -732,7 +834,7 @@ function MyProducts() {
                   <button
                     type="submit"
                     disabled={updateLoading}
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-black text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black sm:ml-3 sm:w-auto sm:text-sm"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     {updateLoading ? 'Updating...' : 'Update Product'}
                   </button>

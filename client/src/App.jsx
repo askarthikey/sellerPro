@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider, Navigate, redirect } from 'react-router-dom';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import RootLayout from './components/RootLayout';
 import StartPage from './components/StartPage';
 import Signup from './components/Signup';
@@ -7,6 +7,7 @@ import Signin from './components/Signin';
 import Home from './components/Home';
 import AddProd from './components/AddProd';
 import MyProducts from './components/MyProducts';
+import ErrorPage from './components/ErrorPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -48,15 +49,7 @@ function App() {
     {
       path: '/',
       element: <RootLayout />,
-      errorElement: <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900">Something went wrong</h2>
-          <p className="text-gray-600 mb-6">We couldn't find the page you're looking for.</p>
-          <a href="/" className="inline-block px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
-            Go back home
-          </a>
-        </div>
-      </div>,
+      errorElement: <ErrorPage />, // Using our new ErrorPage component here
       children: [
         {
           path: '/',
@@ -100,7 +93,7 @@ function App() {
         {
           // Catch-all route for undefined paths
           path: '*',
-          element: isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/startpage" />,
+          element: <ErrorPage />, // Also use ErrorPage for catch-all routes
         }
       ]
     }
