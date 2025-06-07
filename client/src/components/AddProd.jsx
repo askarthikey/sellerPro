@@ -232,7 +232,7 @@ function AddProd() {
         // Show success message briefly before redirecting
         setTimeout(() => {
           // Redirect to My Products page after successful submission
-          navigate('/products/manage');
+          navigate('/myprod');
         }, 1000); // Short delay to show the success message
       } else {
         setError(data.message || 'Failed to add product');

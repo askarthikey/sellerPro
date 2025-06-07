@@ -55,7 +55,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/products/new" className="text-gray-600 hover:text-black text-sm">
+                <Link to="/addprod" className="text-gray-600 hover:text-black text-sm">
                   Add Product
                 </Link>
               </li>

@@ -6,7 +6,6 @@ import Signup from './components/Signup';
 import Signin from './components/Signin';
 import Home from './components/Home';
 import AddProd from './components/AddProd';
-import Catalogue from './components/Catalogue';
 import MyProducts from './components/MyProducts';
 
 function App() {
@@ -57,32 +56,7 @@ function App() {
           loader: protectedLoader
         },
         {
-          path: 'products/new',
-          element: isAuthenticated ? <AddProd /> : <Navigate to="/signin" />,
-          loader: protectedLoader
-        },
-        {
-          path: 'products/bulk-upload',
-          element: isAuthenticated ? <AddProd /> : <Navigate to="/signin" />,
-          loader: protectedLoader
-        },
-        {
-          path: 'products/manage',
-          element: isAuthenticated ? <Catalogue /> : <Navigate to="/signin" />,
-          loader: protectedLoader
-        },
-        {
-          path: 'dashboard',
-          element: isAuthenticated ? <Home /> : <Navigate to="/signin" />,
-          loader: protectedLoader
-        },
-        {
-          path: 'analytics',
-          element: isAuthenticated ? <MyProducts /> : <Navigate to="/signin" />,
-          loader: protectedLoader
-        },
-        {
-          path: 'activity',
+          path: 'addprod',
           element: isAuthenticated ? <AddProd /> : <Navigate to="/signin" />,
           loader: protectedLoader
         },

@@ -78,33 +78,27 @@ function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Updated with your routes */}
           <div className="hidden md:flex md:items-center md:space-x-8">
             {currentUser && (
               <>
                 <Link 
-                  to="/dashboard" 
-                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/dashboard')}`}
+                  to="/home" 
+                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/home')}`}
                 >
-                  Dashboard
+                  Home
                 </Link>
                 <Link 
-                  to="/products/manage" 
-                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/products/manage')}`}
+                  to="/addprod" 
+                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/addprod')}`}
                 >
-                  Products
+                  Add Products
                 </Link>
                 <Link 
-                  to="/analytics" 
-                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/analytics')}`}
+                  to="/myprod" 
+                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/myprod')}`}
                 >
-                  Analytics
-                </Link>
-                <Link 
-                  to="/activity" 
-                  className={`text-gray-700 hover:text-black px-3 py-2 text-sm font-medium ${isActive('/activity')}`}
-                >
-                  Activity
+                  My Products
                 </Link>
                 {currentUser.isAdmin === true && (
                   <Link 
@@ -144,7 +138,7 @@ function Header() {
                     </svg>
                   </button>
                   
-                  {/* Enhanced Profile Dropdown */}
+                  {/* Enhanced Profile Dropdown - Updated with your routes */}
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 overflow-hidden">
                       {/* User Info Section */}
@@ -157,30 +151,30 @@ function Header() {
                         </p>
                       </div>
                       
-                      {/* Quick Access Section */}
+                      {/* Quick Access Section - Updated with your routes */}
                       <div className="py-1">
                         <Link 
-                          to="/profile" 
+                          to="/home" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsProfileDropdownOpen(false)}
                         >
                           <svg className="mr-3 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                           </svg>
-                          My Profile
+                          Home
                         </Link>
                         <Link 
-                          to="/products/manage" 
+                          to="/myprod" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsProfileDropdownOpen(false)}
                         >
                           <svg className="mr-3 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
-                          Manage Products
+                          My Products
                         </Link>
                         <Link 
-                          to="/products/new" 
+                          to="/addprod" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsProfileDropdownOpen(false)}
                         >
@@ -188,26 +182,6 @@ function Header() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                           </svg>
                           Add Product
-                        </Link>
-                        <Link 
-                          to="/products/bulk-upload" 
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsProfileDropdownOpen(false)}
-                        >
-                          <svg className="mr-3 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                          </svg>
-                          Bulk Upload
-                        </Link>
-                        <Link 
-                          to="/analytics" 
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsProfileDropdownOpen(false)}
-                        >
-                          <svg className="mr-3 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                          Analytics
                         </Link>
                       </div>
                       
@@ -291,53 +265,32 @@ function Header() {
         </div>
       </div>
 
-      {/* Mobile menu, show/hide based on menu state */}
+      {/* Mobile menu, show/hide based on menu state - Updated with your routes */}
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
             {currentUser ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to="/home"
                   className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50"
                   onClick={closeMenu}
                 >
-                  Dashboard
+                  Home
                 </Link>
                 <Link
-                  to="/products/manage"
+                  to="/myprod"
                   className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50"
                   onClick={closeMenu}
                 >
-                  Products
+                  My Products
                 </Link>
                 <Link
-                  to="/products/new"
+                  to="/addprod"
                   className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50"
                   onClick={closeMenu}
                 >
                   Add Product
-                </Link>
-                <Link
-                  to="/products/bulk-upload"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50"
-                  onClick={closeMenu}
-                >
-                  Bulk Upload
-                </Link>
-                <Link
-                  to="/analytics"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50"
-                  onClick={closeMenu}
-                >
-                  Analytics
-                </Link>
-                <Link
-                  to="/activity"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50"
-                  onClick={closeMenu}
-                >
-                  Activity
                 </Link>
                 <Link
                   to="/profile"
