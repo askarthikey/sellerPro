@@ -36,11 +36,7 @@ function App() {
       children: [
         {
           path: '/',
-          element: isAuthenticated ? <Navigate to="/home" /> : <Navigate to='/startpage'/>,
-        },
-        {
-          path: 'startpage',
-          element: <StartPage />
+          element: isAuthenticated ? <Home/>:<StartPage />,
         },
         {
           path: 'signup',
@@ -51,11 +47,6 @@ function App() {
           element: <Signin />
         },
         {
-          path: 'home',
-          element: isAuthenticated ? <Home /> : <Navigate to="/signin" />,
-          loader: protectedLoader
-        },
-        {
           path: 'addprod',
           element: isAuthenticated ? <AddProd /> : <Navigate to="/signin" />,
           loader: protectedLoader
@@ -64,13 +55,20 @@ function App() {
           path: 'myprod',
           element: isAuthenticated ? <MyProducts /> : <Navigate to="/signin" />,
           loader: protectedLoader
+        },
+        {
+          // Catch all route for undefined paths
+          path: '*',
+          element: isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/startpage" />
         }
       ]
     }
   ]);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={ <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>}>
       <RouterProvider router={router} />
     </Suspense>
   );

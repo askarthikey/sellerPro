@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-const BackendURL= import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+const BackendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
-const Signin = () => {
+const Signin = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -16,10 +16,9 @@ const Signin = () => {
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
-      navigate('/')
-      window.location.reload()
+      navigate('/home');
     }
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,7 +77,19 @@ const Signin = () => {
           localStorage.removeItem('token');
           localStorage.removeItem('rememberMe');
         }
-        navigate('/home'); // Redirect to home page after successful login
+        
+        // Update the authentication state in App.jsx
+        setIsAuthenticated(true);
+        
+        // Dispatch a custom event to notify any other components about auth change
+        window.dispatchEvent(new Event('auth-change'));
+        
+        // Check if there's a redirect path stored
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/home';
+        sessionStorage.removeItem('redirectAfterLogin');
+        
+        // Navigate to the intended page or home
+        navigate(redirectPath);
       } else {
         setError(data.message || 'Login failed');
       }
@@ -89,6 +100,7 @@ const Signin = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">

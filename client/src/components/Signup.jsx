@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-const BackendURL= import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+const BackendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
-const Signup = () => {
+const Signup = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -18,10 +18,9 @@ const Signup = () => {
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
-      navigate('/')
-      window.location.reload()
+      navigate('/home');
     }
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +29,7 @@ const Signup = () => {
       [name]: value
     }));
   };
+  
   const validateForm = () => {
     if (!formData.username || !formData.fullName || !formData.email || !formData.password) {
       setError('All fields are required');
@@ -50,6 +50,7 @@ const Signup = () => {
     }
     return true;
   };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -69,14 +70,46 @@ const Signup = () => {
           isBlocked: 'false' 
         })
       });
+
       const data = await response.json();
       if (response.ok) {
-        navigate('/signin'); 
+        // If signup is successful, proceed to signin automatically
+        const signinResponse = await fetch(`${BackendURL}/userApi/signin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: formData.username,
+            password: formData.password
+          })
+        });
+        
+        const signinData = await signinResponse.json();
+        
+        if (signinResponse.ok && signinData.token) {
+          // Store in sessionStorage by default for new signups
+          sessionStorage.setItem('user', JSON.stringify(signinData.user));
+          sessionStorage.setItem('token', signinData.token);
+          
+          // Update authentication state
+          setIsAuthenticated(true);
+          
+          // Notify other components
+          window.dispatchEvent(new Event('auth-change'));
+          
+          // Navigate to home
+          navigate('/home');
+        } else {
+          // If auto-login fails, redirect to login page
+          navigate('/signin');
+        }
       } else {
         setError(data.message || 'Registration failed');
       }
     } catch (err) {
-      setError('Network error. Please try again later.',err);
+      setError('Network error. Please try again later.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
