@@ -7,7 +7,7 @@ import Signin from './components/Signin';
 import Home from './components/Home';
 import AddProd from './components/AddProd';
 import Catalogue from './components/Catalogue';
-import Cart from './components/Cart';
+import MyProducts from './components/MyProducts';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -78,17 +78,17 @@ function App() {
         },
         {
           path: 'analytics',
-          element: isAuthenticated ? <Home /> : <Navigate to="/signin" />,
+          element: isAuthenticated ? <MyProducts /> : <Navigate to="/signin" />,
           loader: protectedLoader
         },
         {
           path: 'activity',
-          element: isAuthenticated ? <Home /> : <Navigate to="/signin" />,
+          element: isAuthenticated ? <AddProd /> : <Navigate to="/signin" />,
           loader: protectedLoader
         },
         {
-          path: 'cart',
-          element: isAuthenticated ? <Cart /> : <Navigate to="/signin" />,
+          path: 'myprod',
+          element: isAuthenticated ? <MyProducts /> : <Navigate to="/signin" />,
           loader: protectedLoader
         }
       ]
