@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const BackendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
     totalProducts: 0,
     activeProducts: 0,
@@ -22,7 +23,9 @@ function Home() {
         setIsLoading(true);
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (!token) {
-          throw new Error('Authentication required');
+          // Redirect to signin page if not authenticated
+          navigate('/signin');
+          return;
         }
 
         // Fetch products data
@@ -33,6 +36,13 @@ function Home() {
         });
 
         if (!response.ok) {
+          if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            navigate('/signin');
+            return;
+          }
           throw new Error('Failed to fetch dashboard data');
         }
 
@@ -108,7 +118,15 @@ function Home() {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/signin');
+    }
+  }, [navigate]);
 
   // Helper to format dates
   const formatDate = (dateString) => {
@@ -140,7 +158,7 @@ function Home() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -148,7 +166,7 @@ function Home() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="p-3 text-sm text-white bg-black rounded-md">
+        <div className="p-3 text-sm text-white bg-blue-600 rounded-md">
           {error}
         </div>
       )}
@@ -162,7 +180,7 @@ function Home() {
         <div>
           <Link
             to="/addprod"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
           >
             <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -206,7 +224,7 @@ function Home() {
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/myprod" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <Link to="/myprod" className="text-sm text-green-600 hover:text-green-800 font-medium">
               Manage listings &rarr;
             </Link>
           </div>
@@ -225,7 +243,7 @@ function Home() {
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/myprod" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <Link to="/myprod" className="text-sm text-red-600 hover:text-red-800 font-medium">
               Replenish inventory &rarr;
             </Link>
           </div>
@@ -244,7 +262,7 @@ function Home() {
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/myprod" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <Link to="/myprod" className="text-sm text-yellow-600 hover:text-yellow-800 font-medium">
               View low stock items &rarr;
             </Link>
           </div>
@@ -459,7 +477,7 @@ function Home() {
         </div>
       </div>
 
-      {/* Quick Actions - Simplified, removed analytics and bulk upload */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link to="/addprod" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
           <div className="flex flex-col items-center">
@@ -475,7 +493,7 @@ function Home() {
 
         <Link to="/myprod" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
           <div className="flex flex-col items-center">
-            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
+            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>

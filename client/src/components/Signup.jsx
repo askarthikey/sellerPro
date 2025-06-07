@@ -73,7 +73,7 @@ const Signup = ({ setIsAuthenticated }) => {
 
       const data = await response.json();
       if (response.ok) {
-        // If signup is successful, proceed to signin automatically
+        // If signup is successful, automatically sign in
         const signinResponse = await fetch(`${BackendURL}/userApi/signin`, {
           method: 'POST',
           headers: {
@@ -95,13 +95,13 @@ const Signup = ({ setIsAuthenticated }) => {
           // Update authentication state
           setIsAuthenticated(true);
           
-          // Notify other components
+          // Dispatch event to notify other components about auth change
           window.dispatchEvent(new Event('auth-change'));
           
           // Navigate to home
           navigate('/home');
         } else {
-          // If auto-login fails, redirect to login page
+          // If auto-login fails, redirect to signin page
           navigate('/signin');
         }
       } else {
@@ -114,6 +114,7 @@ const Signup = ({ setIsAuthenticated }) => {
       setLoading(false);
     }
   };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">

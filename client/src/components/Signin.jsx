@@ -11,14 +11,14 @@ const Signin = ({ setIsAuthenticated }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
+ 
   // Check if user is already signed in
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
-      navigate('/home');
+      window.location.href = '/';
     }
-  }, [navigate]);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,34 +62,30 @@ const Signin = ({ setIsAuthenticated }) => {
       const data = await response.json();
       
       if (response.ok && data.token) {
-        // Store auth data in the appropriate storage based on rememberMe
+        // Store auth data based on rememberMe preference
         if (rememberMe) {
-          // Use localStorage for persistent storage across browser sessions
           localStorage.setItem('user', JSON.stringify(data.user));
           localStorage.setItem('token', data.token);
           localStorage.setItem('rememberMe', 'true');
         } else {
-          // Use sessionStorage for current browser session only
           sessionStorage.setItem('user', JSON.stringify(data.user));
           sessionStorage.setItem('token', data.token);
-          // Clear any existing localStorage items to prevent conflicts
+          // Clear any existing localStorage items
           localStorage.removeItem('user');
           localStorage.removeItem('token');
           localStorage.removeItem('rememberMe');
         }
         
         // Update the authentication state in App.jsx
-        setIsAuthenticated(true);
+        if (setIsAuthenticated) {
+          setIsAuthenticated(true);
+        }
         
-        // Dispatch a custom event to notify any other components about auth change
+        // Dispatch event to notify other components about auth change
         window.dispatchEvent(new Event('auth-change'));
         
-        // Check if there's a redirect path stored
-        const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/home';
-        sessionStorage.removeItem('redirectAfterLogin');
-        
-        // Navigate to the intended page or home
-        navigate(redirectPath);
+        // Navigate to the home page using href
+        window.location.href = '/';
       } else {
         setError(data.message || 'Login failed');
       }
@@ -100,7 +96,6 @@ const Signin = ({ setIsAuthenticated }) => {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
